@@ -82,7 +82,9 @@ view.open = function(self, ctx, sources)
 
     -- create filtered entries.
     local offset = ctx.cursor.col
+    local use_custom_position = false
     for i, s in ipairs(source_group) do
+      use_custom_position = s.name == "nvim_lsp" or use_custom_position
       if s.offset <= ctx.cursor.col then
         if not has_triggered_by_symbol_source or s.is_triggered_by_symbol then
           -- source order priority bonus.
@@ -112,7 +114,7 @@ view.open = function(self, ctx, sources)
 
     -- open
     if #entries > 0 then
-      self:_get_entries_view():open(offset, entries)
+      self:_get_entries_view():open(offset, entries, use_custom_position)
       self.event:emit('menu_opened', {
         window = self:_get_entries_view(),
       })

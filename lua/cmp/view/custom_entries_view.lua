@@ -116,7 +116,7 @@ custom_entries_view.is_direction_top_down = function(self)
   end
 end
 
-custom_entries_view.open = function(self, offset, entries)
+custom_entries_view.open = function(self, offset, entries, use_custom_position)
   local completion = config.get().window.completion
   self.offset = offset
   self.entries = {}
@@ -196,11 +196,31 @@ custom_entries_view.open = function(self, offset, entries)
   self.entries_win:option('winblend', vim.o.pumblend)
   self.entries_win:option('winhighlight', completion.winhighlight)
   self.entries_win:option('scrolloff', completion.scrolloff)
+
+  local popup_x = math.max(0, col + completion.col_offset)
+  local popup_y = math.max(0, row)
+
+  if use_custom_position then
+    local window_info = vim.api.nvim_list_uis()[1]
+    local window_width = window_info.width
+    local window_height = window_info.height
+    local buffer_y, buffer_x = unpack(vim.api.nvim_win_get_position(0))
+    
+    popup_x = window_width / 2 - width
+  
+    if buffer_x < window_width / 2 then  
+      popup_x = window_width / 2
+    end
+
+    popup_y = window_height - height - 1
+  end
+  
+
   self.entries_win:open({
     relative = 'editor',
     style = 'minimal',
-    row = math.max(0, row),
-    col = math.max(0, col + completion.col_offset),
+    row = popup_y,
+    col = popup_x,
     width = width,
     height = height,
     border = completion.border,
