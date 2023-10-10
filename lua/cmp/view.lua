@@ -7,6 +7,7 @@ local custom_entries_view = require('cmp.view.custom_entries_view')
 local wildmenu_entries_view = require('cmp.view.wildmenu_entries_view')
 local native_entries_view = require('cmp.view.native_entries_view')
 local ghost_text_view = require('cmp.view.ghost_text_view')
+local api = require('cmp.utils.api')
 
 ---@class cmp.View
 ---@field public event cmp.Event
@@ -82,9 +83,8 @@ view.open = function(self, ctx, sources)
 
     -- create filtered entries.
     local offset = ctx.cursor.col
-    local use_custom_position = false
     for i, s in ipairs(source_group) do
-      use_custom_position = s.name == "nvim_lsp" or use_custom_position
+      -- use_custom_position = s.name ~= "cmdline"--s.name == "nvim_lsp" or (s.name == "buffer" and #source_group == 1) or use_custom_position
       if s.offset <= ctx.cursor.col then
         if not has_triggered_by_symbol_source or s.is_triggered_by_symbol then
           -- source order priority bonus.
@@ -114,7 +114,7 @@ view.open = function(self, ctx, sources)
 
     -- open
     if #entries > 0 then
-      self:_get_entries_view():open(offset, entries, use_custom_position)
+      self:_get_entries_view():open(offset, entries, not api.is_cmdline_mode())
       self.event:emit('menu_opened', {
         window = self:_get_entries_view(),
       })
